@@ -1,5 +1,8 @@
 name: Build Emby fnOS Package
 
+permissions:
+  contents: write
+
 on:
   schedule:
     - cron: '0 8 * * *'  # 每天 UTC 8:00 (北京时间 16:00)
