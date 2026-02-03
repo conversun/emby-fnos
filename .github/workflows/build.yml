@@ -54,15 +54,17 @@ jobs:
           
           echo "==> 下载 Emby Server $VERSION"
           curl -L -o emby.deb "https://github.com/MediaBrowser/Emby.Releases/releases/download/${VERSION}/emby-server-deb_${VERSION}_amd64.deb"
+          ls -lh emby.deb
           
           echo "==> 解压 deb"
           ar -x emby.deb
           mkdir -p extracted
           tar -xf data.tar.xz -C extracted
+          du -sh extracted/opt/emby-server/*
           
           echo "==> 构建 app.tgz"
           mkdir -p app_root
-          cp -r extracted/opt/emby-server/* app_root/
+          cp -a extracted/opt/emby-server/* app_root/
           mkdir -p app_root/config app_root/ui/images
           
           cp fnos/EmbyServer.sc app_root/
@@ -70,14 +72,16 @@ jobs:
           cp fnos/bin/emby-server app_root/bin/emby-server
           chmod +x app_root/bin/emby-server
           
+          du -sh app_root/*
           cd app_root && tar -czf ../app.tgz . && cd ..
+          ls -lh app.tgz
           
           echo "==> 构建 fpk"
           CHECKSUM=$(md5sum app.tgz | cut -d' ' -f1)
           
           mkdir -p package
-          cp app.tgz package/
-          cp -r fnos/cmd fnos/config fnos/wizard fnos/ICON*.PNG package/
+          mv app.tgz package/
+          cp -a fnos/cmd fnos/config fnos/wizard fnos/ICON*.PNG package/
           
           sed "s/^version.*/version         = ${VERSION}/" fnos/manifest > package/manifest
           sed -i "s/^checksum.*/checksum        = ${CHECKSUM}/" package/manifest
