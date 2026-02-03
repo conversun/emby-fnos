@@ -2,3 +2,5 @@
 *.deb
 *.tgz
 package/
+embyserver_*/
+.DS_Store

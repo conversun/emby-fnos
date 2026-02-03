@@ -1,8 +1,0 @@
-{
-    "defaults": {
-        "run-as": "root"
-    },
-    "username": "EmbyServer",
-    "groupname": "EmbyServer",
-    "join-groups": ["video","render"]
-}
