@@ -1,0 +1,30 @@
+#!/bin/sh
+APP_NAME=embyserver
+APP_DIR=/var/apps/embyserver/target
+APP_DATA_DIR=$1
+PID_FILE="$APP_DATA_DIR"/$APP_NAME.pid
+
+export AMDGPU_IDS=$APP_DIR/extra/share/libdrm/amdgpu.ids
+[ -z "$EMBY_DATA" ] && export EMBY_DATA=/var/lib/emby
+export FONTCONFIG_PATH=$APP_DIR/etc/fonts
+export LD_LIBRARY_PATH=$APP_DIR/lib:$APP_DIR/extra/lib
+export LIBVA_DRIVERS_PATH=$APP_DIR/extra/lib/dri
+export OCL_ICD_VENDORS=$APP_DIR/extra/etc/OpenCL/vendors
+export PATH=$APP_DIR/bin:"$PATH"
+export PCI_IDS_PATH=$APP_DIR/share/hwdata/pci.ids
+export SSL_CERT_FILE=$APP_DIR/etc/ssl/certs/ca-certificates.crt
+export XDG_CACHE_HOME=$EMBY_DATA/cache
+export NEOReadDebugKeys=1
+export OverrideGpuAddressSpace=48
+
+cd $APP_DIR || exit 1
+exec $APP_DIR/system/EmbyServer \
+  -programdata $APP_DATA_DIR \
+  -ffdetect $APP_DIR/bin/ffdetect \
+  -ffmpeg $APP_DIR/bin/ffmpeg \
+  -ffprobe $APP_DIR/bin/ffprobe \
+  -restartexitcode 3 \
+  -nolocalportconfig \
+  -ignore_vaapi_enabled_flag \
+  -pidfile "$PID_FILE" \
+  -defaultdirectory /var/apps/$APP_NAME/shares

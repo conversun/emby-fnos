@@ -1,0 +1,4 @@
+*.fpk
+*.deb
+*.tgz
+package/
