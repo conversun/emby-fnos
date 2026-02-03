@@ -69,6 +69,7 @@ jobs:
           
           cp fnos/EmbyServer.sc app_root/
           cp fnos/config/* app_root/config/
+          cp -a fnos/ui/* app_root/ui/
           cp fnos/bin/emby-server app_root/bin/emby-server
           chmod +x app_root/bin/emby-server
           

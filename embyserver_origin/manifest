@@ -1,0 +1,13 @@
+appname         = embyserver
+version         = 4.9.1.90
+display_name    = Emby
+maintainer      = Emby LLC
+maintainer_url  = https://emby.media
+distributor     = hxido
+distributor_url = https://github.com/Hxido-RXM/FnDepot
+desktop_uidir   = ui
+desktop_appname = embyserver.Application
+beta            = no
+desc            = EmbyServer是一款软件媒体系统，可让您控制媒体的管理和流式传输。可以通过多个应用程序将专用服务器中的媒体提供给最终用户设备。
+source          = thirdparty
+checksum        = b6ce467caf68cf6b7254c3cb907b1e1d
