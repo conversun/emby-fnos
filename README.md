@@ -21,12 +21,9 @@ Auto-build Emby Server packages for fnOS - Daily updates from official releases
 
 GitHub Actions 每天自动检查 [Emby 官方 Releases](https://github.com/MediaBrowser/Emby.Releases/releases)，有新版本时自动构建并发布。
 
-## Architecture
+## Open Source
 
-- **Platform**: fnOS (飞牛私有云)
-- **Supported Architectures**: 
-  - x86_64 (amd64) - Intel/AMD 64-bit
-  - aarch64 (arm64) - ARM 64-bit
+本项目完全开源，仅从官方渠道下载原版软件并重新打包，**无任何后门或修改**。构建脚本和 CI 流程公开透明，欢迎审查。
 
 ## Local Build
 
