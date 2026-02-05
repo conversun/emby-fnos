@@ -39,11 +39,11 @@ detect_arch() {
     case "$ARCH" in
         amd64)
             DEB_ARCH="amd64"
-            MANIFEST_ARCH="x86_64"
+            MANIFEST_PLATFORM="x86"
             ;;
         arm64)
             DEB_ARCH="arm64"
-            MANIFEST_ARCH="aarch64"
+            MANIFEST_PLATFORM="arm"
             ;;
         *)
             error "Invalid architecture: $ARCH. Must be amd64 or arm64."
@@ -51,7 +51,7 @@ detect_arch() {
     esac
     
     info "Deb arch: $DEB_ARCH"
-    info "Manifest arch: $MANIFEST_ARCH"
+    info "Manifest platform: $MANIFEST_PLATFORM"
 }
 
 get_latest_version() {
@@ -120,10 +120,10 @@ update_manifest() {
     sed -i.tmp "s/^version.*=.*/version         = ${EMBY_VERSION_CLEAN}/" "$PKG_DIR/manifest"
     sed -i.tmp "s/^checksum.*=.*/checksum        = ${checksum}/" "$PKG_DIR/manifest"
     
-    if ! grep -q "^arch" "$PKG_DIR/manifest"; then
-        echo "arch            = ${MANIFEST_ARCH}" >> "$PKG_DIR/manifest"
+    if ! grep -q "^platform" "$PKG_DIR/manifest"; then
+        echo "platform        = ${MANIFEST_PLATFORM}" >> "$PKG_DIR/manifest"
     else
-        sed -i.tmp "s/^arch.*=.*/arch            = ${MANIFEST_ARCH}/" "$PKG_DIR/manifest"
+        sed -i.tmp "s/^platform.*=.*/platform        = ${MANIFEST_PLATFORM}/" "$PKG_DIR/manifest"
     fi
     
     rm -f "$PKG_DIR/manifest.tmp"

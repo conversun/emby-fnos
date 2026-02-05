@@ -91,10 +91,10 @@ jobs:
         include:
           - arch: amd64
             deb_arch: amd64
-            manifest_arch: x86_64
+            manifest_platform: x86
           - arch: arm64
             deb_arch: arm64
-            manifest_arch: aarch64
+            manifest_platform: arm
     
     steps:
       - name: Checkout
@@ -105,7 +105,7 @@ jobs:
           VERSION="${{ needs.check-version.outputs.version }}"
           ARCH="${{ matrix.arch }}"
           DEB_ARCH="${{ matrix.deb_arch }}"
-          MANIFEST_ARCH="${{ matrix.manifest_arch }}"
+          MANIFEST_PLATFORM="${{ matrix.manifest_platform }}"
           
           echo "==> 构建 $ARCH 版本 (deb arch: $DEB_ARCH)"
           
@@ -144,10 +144,10 @@ jobs:
           sed "s/^version.*/version         = ${VERSION}/" fnos/manifest > package/manifest
           sed -i "s/^checksum.*/checksum        = ${CHECKSUM}/" package/manifest
           
-          if ! grep -q "^arch" package/manifest; then
-            echo "arch            = ${MANIFEST_ARCH}" >> package/manifest
+          if ! grep -q "^platform" package/manifest; then
+            echo "platform        = ${MANIFEST_PLATFORM}" >> package/manifest
           else
-            sed -i "s/^arch.*/arch            = ${MANIFEST_ARCH}/" package/manifest
+            sed -i "s/^platform.*/platform        = ${MANIFEST_PLATFORM}/" package/manifest
           fi
           
           cd package && tar -czf ../embyserver_${VERSION}_${ARCH}.fpk * && cd ..
