@@ -198,8 +198,8 @@ jobs:
           - 平台: fnOS${REVISION_NOTE}
 
           **国内镜像**:
-          - [amd64](https://ghfast.top/https://github.com/conversun/emby-fnos/releases/download/${RELEASE_TAG}/embyserver_${VERSION}_amd64.fpk)
-          - [arm64](https://ghfast.top/https://github.com/conversun/emby-fnos/releases/download/${RELEASE_TAG}/embyserver_${VERSION}_arm64.fpk)" \
+          - [embyserver_${VERSION}_amd64.fpk](https://ghfast.top/https://github.com/conversun/emby-fnos/releases/download/${RELEASE_TAG}/embyserver_${VERSION}_amd64.fpk)
+          - [embyserver_${VERSION}_arm64.fpk](https://ghfast.top/https://github.com/conversun/emby-fnos/releases/download/${RELEASE_TAG}/embyserver_${VERSION}_arm64.fpk)" \
             artifacts/fpk-amd64/*.fpk \
             artifacts/fpk-arm64/*.fpk
         env:
