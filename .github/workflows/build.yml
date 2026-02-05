@@ -197,12 +197,7 @@ jobs:
           - 基于 [Emby Server ${VERSION}](https://github.com/MediaBrowser/Emby.Releases/releases/tag/${VERSION})
           - 平台: fnOS${REVISION_NOTE}
 
-          ## 下载
-
-          | 架构 | 文件 |
-          |------|------|
-          | x86_64 (Intel/AMD) | \`embyserver_${VERSION}_amd64.fpk\` |
-          | aarch64 (ARM64) | \`embyserver_${VERSION}_arm64.fpk\` |" \
+          **国内镜像**: https://ghproxy.com/https://github.com/conversun/emby-fnos/releases/download/${RELEASE_TAG}/" \
             artifacts/fpk-amd64/*.fpk \
             artifacts/fpk-arm64/*.fpk
         env:
