@@ -5,17 +5,25 @@ permissions:
 
 on:
   schedule:
-    - cron: '0 8 * * *'  # 每天 UTC 8:00 (北京时间 16:00)
-  workflow_dispatch:      # 手动触发
+    - cron: '0 8 * * *'
+  workflow_dispatch:
     inputs:
       version:
         description: '版本号 (留空则自动获取最新)'
         required: false
         default: ''
+      revision:
+        description: '修订后缀 (如 r2 用于重新发布，留空则自动处理)'
+        required: false
+        default: ''
 
 jobs:
-  build:
+  check-version:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      release_tag: ${{ steps.check.outputs.release_tag }}
+      should_build: ${{ steps.check.outputs.should_build }}
     
     steps:
       - name: Checkout
@@ -34,26 +42,75 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "检测到版本: $VERSION"
 
-      - name: Check if Release Exists
+      - name: Check Release and Determine Tag
         id: check
         run: |
-          if gh release view "v${{ steps.version.outputs.version }}" &>/dev/null; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "版本 ${{ steps.version.outputs.version }} 已存在，跳过构建"
+          VERSION="${{ steps.version.outputs.version }}"
+          REVISION="${{ github.event.inputs.revision }}"
+          
+          if [ -n "$REVISION" ]; then
+            RELEASE_TAG="v${VERSION}-${REVISION}"
+            echo "手动指定修订: $RELEASE_TAG"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "版本 ${{ steps.version.outputs.version }} 不存在，开始构建"
+            if gh release view "v${VERSION}" &>/dev/null; then
+              HIGHEST_REV=$(gh release list --limit 100 | grep "v${VERSION}" | \
+                sed -n 's/.*v'"${VERSION}"'-r\([0-9]*\).*/\1/p' | sort -n | tail -1)
+              
+              if [ -n "$HIGHEST_REV" ]; then
+                NEXT_REV=$((HIGHEST_REV + 1))
+                RELEASE_TAG="v${VERSION}-r${NEXT_REV}"
+              else
+                RELEASE_TAG="v${VERSION}-r2"
+              fi
+              echo "版本已存在，使用修订: $RELEASE_TAG"
+            else
+              RELEASE_TAG="v${VERSION}"
+              echo "新版本: $RELEASE_TAG"
+            fi
           fi
+          
+          if gh release view "$RELEASE_TAG" &>/dev/null; then
+            echo "should_build=false" >> $GITHUB_OUTPUT
+            echo "Release $RELEASE_TAG 已存在，跳过构建"
+          else
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  build:
+    needs: check-version
+    if: needs.check-version.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            deb_arch: amd64
+            manifest_arch: x86_64
+          - arch: arm64
+            deb_arch: arm64
+            manifest_arch: aarch64
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Build Package
-        if: steps.check.outputs.exists == 'false'
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ needs.check-version.outputs.version }}"
+          ARCH="${{ matrix.arch }}"
+          DEB_ARCH="${{ matrix.deb_arch }}"
+          MANIFEST_ARCH="${{ matrix.manifest_arch }}"
           
-          echo "==> 下载 Emby Server $VERSION"
-          curl -L -o emby.deb "https://github.com/MediaBrowser/Emby.Releases/releases/download/${VERSION}/emby-server-deb_${VERSION}_amd64.deb"
+          echo "==> 构建 $ARCH 版本 (deb arch: $DEB_ARCH)"
+          
+          echo "==> 下载 Emby Server $VERSION ($ARCH)"
+          curl -L -o emby.deb "https://github.com/MediaBrowser/Emby.Releases/releases/download/${VERSION}/emby-server-deb_${VERSION}_${DEB_ARCH}.deb"
           ls -lh emby.deb
           
           echo "==> 解压 deb"
@@ -87,22 +144,66 @@ jobs:
           sed "s/^version.*/version         = ${VERSION}/" fnos/manifest > package/manifest
           sed -i "s/^checksum.*/checksum        = ${CHECKSUM}/" package/manifest
           
-          cd package && tar -czf ../embyserver_${VERSION}_amd64.fpk * && cd ..
+          if ! grep -q "^arch" package/manifest; then
+            echo "arch            = ${MANIFEST_ARCH}" >> package/manifest
+          else
+            sed -i "s/^arch.*/arch            = ${MANIFEST_ARCH}/" package/manifest
+          fi
+          
+          cd package && tar -czf ../embyserver_${VERSION}_${ARCH}.fpk * && cd ..
           
           echo "==> 完成"
-          ls -lh embyserver_${VERSION}_amd64.fpk
+          ls -lh embyserver_${VERSION}_${ARCH}.fpk
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fpk-${{ matrix.arch }}
+          path: embyserver_${{ needs.check-version.outputs.version }}_${{ matrix.arch }}.fpk
+          retention-days: 1
+
+  release:
+    needs: [check-version, build]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
 
       - name: Create Release
-        if: steps.check.outputs.exists == 'false'
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          gh release create "v${VERSION}" \
+          VERSION="${{ needs.check-version.outputs.version }}"
+          RELEASE_TAG="${{ needs.check-version.outputs.release_tag }}"
+          
+          echo "==> 创建 release $RELEASE_TAG"
+          ls -la artifacts/*/
+          
+          if [[ "$RELEASE_TAG" == *"-r"* ]]; then
+            REVISION_NOTE="
+          - **打包修订**: ${RELEASE_TAG##*-}"
+          else
+            REVISION_NOTE=""
+          fi
+          
+          gh release create "$RELEASE_TAG" \
             --title "Emby Server ${VERSION} for fnOS" \
             --notes "自动构建的 fnOS 安装包
 
           - 基于 [Emby Server ${VERSION}](https://github.com/MediaBrowser/Emby.Releases/releases/tag/${VERSION})
-          - 架构: x86_64 (amd64)
-          - 平台: fnOS" \
-            embyserver_${VERSION}_amd64.fpk
+          - 平台: fnOS${REVISION_NOTE}
+
+          ## 下载
+
+          | 架构 | 文件 |
+          |------|------|
+          | x86_64 (Intel/AMD) | \`embyserver_${VERSION}_amd64.fpk\` |
+          | aarch64 (ARM64) | \`embyserver_${VERSION}_arm64.fpk\` |" \
+            artifacts/fpk-amd64/*.fpk \
+            artifacts/fpk-arm64/*.fpk
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
