@@ -24,29 +24,29 @@ detect_arch() {
         local machine=$(uname -m)
         case "$machine" in
             x86_64|amd64)
-                ARCH=amd64
+                ARCH=x86
                 ;;
             aarch64|arm64)
-                ARCH=arm64
+                ARCH=arm
                 ;;
             *)
-                error "Unsupported architecture: $machine. Use --arch to specify amd64 or arm64."
+                error "Unsupported architecture: $machine. Use --arch to specify x86 or arm."
                 ;;
         esac
         info "Auto-detected architecture: $ARCH"
     fi
     
     case "$ARCH" in
-        amd64)
+        x86)
             DEB_ARCH="amd64"
             MANIFEST_PLATFORM="x86"
             ;;
-        arm64)
+        arm)
             DEB_ARCH="arm64"
             MANIFEST_PLATFORM="arm"
             ;;
         *)
-            error "Invalid architecture: $ARCH. Must be amd64 or arm64."
+            error "Invalid architecture: $ARCH. Must be x86 or arm."
             ;;
     esac
     
@@ -153,22 +153,22 @@ show_help() {
 用法: $0 [选项] [版本号|latest|beta]
 
 选项:
-  --arch ARCH       指定目标架构 (amd64 或 arm64)，默认自动检测
+  --arch ARCH       指定目标架构 (x86 或 arm)，默认自动检测
   -h, --help        显示此帮助信息
 
 示例:
   $0                        # 最新稳定版，自动检测架构
-  $0 --arch arm64           # 最新版本，ARM64 架构
-  $0 --arch amd64 4.9.3.0   # 指定版本，AMD64 架构
+  $0 --arch arm             # 最新版本，ARM 架构
+  $0 --arch x86 4.9.3.0     # 指定版本，x86 架构
   $0 beta                   # 最新 beta 版本
 
 环境变量:
-  ARCH              目标架构 (amd64 或 arm64)
+  ARCH              目标架构 (x86 或 arm)
   EMBY_VERSION      Emby 版本号
 
 支持的架构:
-  amd64 (x86_64)    Intel/AMD 64位处理器
-  arm64 (aarch64)   ARM 64位处理器
+  x86 (x86_64)      Intel/AMD 64位处理器
+  arm (aarch64)     ARM 64位处理器
 EOF
 }
 
