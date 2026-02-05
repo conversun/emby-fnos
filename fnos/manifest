@@ -1,7 +1,7 @@
 appname         = embyserver
 version         = 4.9.3.0
 display_name    = Emby
-arch            = x86_64
+platform        = arm
 maintainer      = Emby LLC
 maintainer_url  = https://emby.media
 distributor     = conversun
