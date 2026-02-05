@@ -6,11 +6,6 @@ Auto-build Emby Server packages for fnOS - Daily updates from official releases
 
 从 [Releases](https://github.com/conversun/emby-fnos/releases) 下载最新的 `.fpk` 文件。
 
-| 架构 | 文件名 | 适用设备 |
-|------|--------|----------|
-| x86_64 (amd64) | `embyserver_x.x.x.x_amd64.fpk` | Intel/AMD 处理器 |
-| aarch64 (arm64) | `embyserver_x.x.x.x_arm64.fpk` | ARM64 处理器 |
-
 ## Install
 
 1. 根据你的设备架构下载对应的 `.fpk` 文件
