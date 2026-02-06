@@ -10,9 +10,9 @@ LOG_FILE="${TRIM_PKGVAR}/${TRIM_APPNAME}.log"
 PID_FILE="${TRIM_PKGVAR}/${TRIM_APPNAME}.pid"
 
 APP_NAME=embyserver
-APP_DIR=/var/apps/$APP_NAME/target
-PID_FILE=/var/apps/$APP_NAME/var/$APP_NAME.pid
-APP_DATA_DIR=/var/apps/$APP_NAME/var
+APP_DIR="${TRIM_APPDEST}"
+PID_FILE="${TRIM_PKGVAR}/${APP_NAME}.pid"
+APP_DATA_DIR="${TRIM_PKGVAR}"
 
 ### Package specific variables and functions
 ### ----------------------------------------
