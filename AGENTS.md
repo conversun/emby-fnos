@@ -7,7 +7,7 @@ The build process downloads official Emby releases, repackages them for fnOS (�
 and publishes via GitHub Actions.
 
 **Platform**: fnOS (飞牛私有云 NAS system)
-**Architecture**: x86_64 (amd64) only
+**Architecture**: x86_64 / aarch64
 **Language**: Shell scripts (Bash/POSIX sh)
 
 ---

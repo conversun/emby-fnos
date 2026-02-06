@@ -27,11 +27,11 @@ GitHub Actions 每天自动检查 [Emby 官方 Releases](https://github.com/Medi
 ./update_emby.sh
 
 # 指定架构
-./update_emby.sh --arch arm64
-./update_emby.sh --arch amd64
+./update_emby.sh --arch arm
+./update_emby.sh --arch x86
 
 # 指定版本
-./update_emby.sh --arch arm64 4.9.3.0
+./update_emby.sh --arch arm 4.9.3.0
 
 # 查看帮助
 ./update_emby.sh --help
